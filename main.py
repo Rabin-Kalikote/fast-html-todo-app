@@ -40,6 +40,7 @@ def render(todo):
         border-radius: 0.375rem;
         border: 1px solid #e5e7eb;
         background-color: white;
+        color: #4b5563;
         cursor: pointer;
         transition: background-color 0.2s;
     '''
@@ -107,12 +108,14 @@ def create_nav_button(text, href, active=False):
     '''
     return Button(A(text, href=href, style='text-decoration: none; color: inherit;'), style=style)
 
-def create_navigation(active_route=''):
+def create_navigation(active_route='', active_tag=''):
     return Div(
         create_nav_button('All Tasks', '/', active='/' == active_route),
         create_nav_button('Completed', '/completed', active='/completed' == active_route),
         create_nav_button('Pending', '/pending', active='/pending' == active_route),
         create_nav_button('By Due Date', '/by-due-date', active='/by-due-date' == active_route),
+        # Add a new button for filtering by tag
+        create_nav_button('By Tag', '/by-tag', active='/by-tag' == active_route),
         style='''
             margin: 1rem 0;
             padding: 0.5rem;
@@ -181,7 +184,7 @@ def get():
     tdlist = Ul(*todos(), id="todo-list", style='padding: 0;')
     
     return Div(
-        H1('Todo App', style='text-align: center; color: #1f2937;'),
+        H1('ToDo Tracker', style='text-align: center; color: #fff;'),
         frm,
         create_navigation(),
         tdlist,
@@ -242,6 +245,25 @@ def get():
         H1('Tasks by Due Date', style='text-align: center; color: #1f2937;'),
         create_navigation('/by-due-date'),
         Ul(*sorted_todos, style='padding: 0;')
+    )
+
+@rt('/by-tag')
+def get():
+    tags = set(tag.strip() for todo in todos() for tag in (todo.tags or '').split(',') if tag.strip())
+    tag_buttons = [create_nav_button(tag, f'/by-tag/{tag}', active=False) for tag in tags]
+    return Div(
+        H1('Tasks by Tag', style='text-align: center; color: #1f2937;'),
+        create_navigation('/by-tag'),
+        Div(*tag_buttons, style='text-align: center; margin-bottom: 1rem;'),
+    )
+
+@rt('/by-tag/{tag}')
+def get(tag: str):
+    filtered_todos = [t for t in todos() if tag in (t.tags or '').split(',')]
+    return Div(
+        H1(f'Tasks with Tag: {tag}', style='text-align: center; color: #1f2937;'),
+        create_navigation('/by-tag', active_tag=tag),
+        Ul(*filtered_todos, style='padding: 0;')
     )
 
 if __name__ == '__main__':
