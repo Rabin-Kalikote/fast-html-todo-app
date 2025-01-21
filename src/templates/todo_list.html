@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>Todo Tracker</title>
+</head>
+<body>
+    <header>
+        <h1>Todo Tracker</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/todos">Todos</a>
+        </nav>
+    </header>
+    <main>
+        <section id="todo-form">
+            <h2>Add a New Todo</h2>
+            <form action="/todos" method="POST">
+                <input type="text" name="title" placeholder="Title" required>
+                <textarea name="body" placeholder="Body"></textarea>
+                <input type="datetime-local" name="due_date">
+                <button type="submit">Add Todo</button>
+            </form>
+        </section>
+        <section id="todo-list">
+            <h2>Your Todos</h2>
+            <ul>
+                {% for todo in todos %}
+                    <li>
+                        <h3>{{ todo.title }}</h3>
+                        <p>{{ todo.body }}</p>
+                        <p>Created at: {{ todo.creation_time }}</p>
+                        {% if todo.due_date %}
+                            <p>Due date: {{ todo.due_date }}</p>
+                        {% endif %}
+                        <p>Status: {{ 'Completed' if todo.is_completed else 'Pending' }}</p>
+                        <p>Tags: {{ ', '.join(todo.tags) }}</p>
+                        <form action="/todos/{{ todo.id }}/toggle" method="POST">
+                            <button type="submit">{{ 'Mark as Incomplete' if todo.is_completed else 'Mark as Complete' }}</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2023 Todo Tracker</p>
+    </footer>
+    <script src="/static/main.js"></script>
+</body>
+</html>
