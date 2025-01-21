@@ -27,17 +27,12 @@ def tid(id): return f'todo-{id}'
 def __ft__(self:Todo):
     show = AX(self.title, f'/todos/{self.id}', id_curr)
     edit = AX('edit', f'/edit/{self.id}', id_curr)
-    status = ' ✅' if self.is_completed else ''
-    tags = [Span(tag.strip(), cls='tag', hx_get=f'/filter/tag/{tag.strip()}') 
-            for tag in (self.tags or '').split(',') if tag.strip()]
-    
-    return Li(
-        Div(show, status, cls='todo-header'),
-        Div(self.body, cls='todo-body'),
-        Div(f"Created: {self.created_at.strftime('%Y-%m-%d %H:%M')}"),
-        Div(f"Due: {self.due_date.strftime('%Y-%m-%d') if self.due_date else 'No due date'}"),
-        Div(*tags, cls='tags'),
-        Div(edit, cls='todo-actions'),
+    # Handle created_at display safely
+    created_at_str = self.created_at.strftime('%Y-%m-%d %H:%M') if isinstance(self.created_at, datetime) else "No date"
+    return Div(
+        show,
+        edit,
+        Div(f"Created: {created_at_str}"),
         id=tid(self.id)
     )
 
@@ -87,40 +82,54 @@ def get():
     )
 
 @rt("/todos/{id}")
-def delete(id:int):
+async def delete(id:int):
+    # Use synchronous delete
     todos.delete(id)
     return clear(id_curr)
 
 @rt("/")
-def post(todo:Todo):
-    todo.created_at = datetime.now()
-    return todos.insert(todo), mk_form(hx_swap_oob='true')
+async def post(req: Request):
+    form = await req.form()
+    
+    # Create new todo with proper datetime handling
+    todo = Todo(
+        title=form.get('title'),
+        body=form.get('body'),
+        created_at=datetime.now(),
+        due_date=datetime.strptime(form.get('due_date'), '%Y-%m-%d') if form.get('due_date') else None,
+        tags=form.get('tags'),
+        is_completed=False
+    )
+    
+    # Use synchronous insert
+    todos.insert(todo)
+    return todo.__ft__()
 
 @rt("/edit/{id}")
-def get(id:int):
+async def get(id:int):
+    # Use synchronous get
     todo = todos.get(id)
     res = Form(
         mk_form(),
-        Hidden(id="id"),
-        CheckboxX(id="is_completed", label='Completed'),
+        Hidden(name="id", value=todo.id),
+        CheckboxX(id="is_completed", checked=todo.is_completed, label='Completed'),
         Button("Save"),
-        hx_put="/",
+        hx_put=f"/edit/{id}",
         hx_swap="outerHTML",
-        target_id=tid(id),
-        id="edit"
+        target_id=tid(id)
     )
-    return fill_form(res, todo)
+    return res.fill(todo)
 
-@rt("/todos/{id}")
-def get(id:int):
-    todo = todos.get(id)
-    btn = Button('delete', hx_delete=f'/todos/{todo.id}',
-                 target_id=tid(todo.id), hx_swap="outerHTML")
-    return Div(
-        Div(todo.title),
-        Div(todo.body),
-        btn
-    )
+# @rt("/todos/{id}")
+# def get(id:int):
+#     todo = todos.get(id)
+#     btn = Button('delete', hx_delete=f'/todos/{todo.id}',
+#                  target_id=tid(todo.id), hx_swap="outerHTML")
+#     return Div(
+#         Div(todo.title),
+#         Div(todo.body),
+#         btn
+#     )
 
 @rt("/filter/status")
 def get(status: str):
