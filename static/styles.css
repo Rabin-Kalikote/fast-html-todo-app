@@ -1,0 +1,53 @@
+.todo-item {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+}
+
+.todo-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.todo-body {
+    margin: 0.5rem 0;
+    color: #666;
+}
+
+.todo-dates {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.tag {
+    background: #e9ecef;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.tag:hover {
+    background: #dee2e6;
+}
+
+.filters, .sorts {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+button.active {
+    background: #0d6efd;
+    color: white;
+}

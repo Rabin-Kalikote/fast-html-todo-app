@@ -1,9 +1,0 @@
-CREATE TABLE todos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    body TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    due_date TIMESTAMP,
-    is_completed BOOLEAN DEFAULT 0,
-    tags TEXT
-);
